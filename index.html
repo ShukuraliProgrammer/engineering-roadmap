@@ -237,13 +237,13 @@
     #auth-box h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
     #auth-box p  { font-size: 0.95rem; color: var(--muted); line-height: 1.65; }
     #auth-form-signin, #auth-form-signup { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
-    #auth-email, #auth-password, #auth-email-signup {
+    #auth-email, #auth-password, #auth-email-signup, #auth-password-signup {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: 1rem;
       padding: 12px 16px; outline: none; text-align: center;
     }
-    #auth-email:focus, #auth-password:focus, #auth-email-signup:focus { border-color: #6366f1; }
-    #auth-email::placeholder, #auth-password::placeholder, #auth-email-signup::placeholder { color: var(--muted); }
+    #auth-email:focus, #auth-password:focus, #auth-email-signup:focus, #auth-password-signup:focus { border-color: #6366f1; }
+    #auth-email::placeholder, #auth-password::placeholder, #auth-email-signup::placeholder, #auth-password-signup::placeholder { color: var(--muted); }
     #auth-btn-signin, #auth-btn-signup {
       background: #6366f1; color: white; border: none;
       border-radius: 10px; font-size: 1rem; font-weight: 600;
@@ -462,22 +462,24 @@
              onkeydown="if(event.key==='Enter') handlePasswordSignIn()">
       <button id="auth-btn-signin" onclick="handlePasswordSignIn()">Sign In 🔑</button>
       <p id="auth-err" style="display:none"></p>
-      <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuthMode('signup'); return false;">Sign up with magic link</a></p>
+      <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuthMode('signup'); return false;">Sign up</a></p>
     </div>
 
-    <!-- SIGN UP FORM (magic link) -->
+    <!-- SIGN UP FORM (email + password) -->
     <div id="auth-form-signup" style="display:none">
       <input id="auth-email-signup" type="email" placeholder="your@email.com"
-             onkeydown="if(event.key==='Enter') handleMagicLinkSignUp()">
-      <button id="auth-btn-signup" onclick="handleMagicLinkSignUp()">Send magic link ✉️</button>
+             onkeydown="if(event.key==='Enter') document.getElementById('auth-password-signup').focus()">
+      <input id="auth-password-signup" type="password" placeholder="Create a password"
+             onkeydown="if(event.key==='Enter') handleSignUp()">
+      <button id="auth-btn-signup" onclick="handleSignUp()">Create Account ✨</button>
       <p id="auth-err-signup" style="display:none"></p>
       <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuthMode('signin'); return false;">Sign in</a></p>
     </div>
 
     <div id="auth-sent" style="display:none">
       <div class="sent-icon">✉️</div>
-      <p>Magic link sent! Check your email and click the link — works on any device.</p>
-      <p class="hint">You can close this tab. The link will bring you right back.</p>
+      <p id="auth-sent-msg">Check your email for a confirmation link to activate your account.</p>
+      <p class="hint">Once confirmed, you can sign in with your email and password.</p>
     </div>
   </div>
 </div>
@@ -3917,23 +3919,23 @@ async function handlePasswordSignIn() {
   // On success, onAuthStateChange will handle showing the app
 }
 
-// ── Sign Up with magic link (new users) ──
-async function handleMagicLinkSignUp() {
-  const email = document.getElementById('auth-email-signup').value.trim();
-  const err   = document.getElementById('auth-err-signup');
-  const btn   = document.getElementById('auth-btn-signup');
+// ── Sign Up with email + password (new users) ──
+async function handleSignUp() {
+  const email    = document.getElementById('auth-email-signup').value.trim();
+  const password = document.getElementById('auth-password-signup').value;
+  const err      = document.getElementById('auth-err-signup');
+  const btn      = document.getElementById('auth-btn-signup');
 
   err.style.display = 'none';
-  if (!email) { err.textContent = 'Please enter your email.'; err.style.display = 'block'; return; }
+  if (!email)    { err.textContent = 'Please enter your email.';    err.style.display = 'block'; return; }
+  if (!password) { err.textContent = 'Please create a password.'; err.style.display = 'block'; return; }
+  if (password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
 
-  btn.disabled = true; btn.textContent = 'Sending…';
-  const { error } = await supa.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: location.href }
-  });
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  const { error } = await supa.auth.signUp({ email, password });
   if (error) {
     err.textContent = error.message; err.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Send magic link ✉️';
+    btn.disabled = false; btn.textContent = 'Create Account ✨';
   } else {
     document.getElementById('auth-form-signup').style.display = 'none';
     document.getElementById('auth-sent').style.display = 'block';
@@ -3959,7 +3961,7 @@ function switchAuthMode(mode) {
   if (mode === 'signup') {
     signinForm.style.display = 'none';
     signupForm.style.display = 'flex';
-    subtitle.textContent = 'Create an account — we\'ll send a magic link to your email.';
+    subtitle.textContent = 'Create an account to sync your progress across all devices.';
   } else {
     signupForm.style.display = 'none';
     signinForm.style.display = 'flex';
@@ -3987,11 +3989,13 @@ function showAuth() {
   if (authPass) authPass.value = '';
   const authEmailSignup = document.getElementById('auth-email-signup');
   if (authEmailSignup) authEmailSignup.value = '';
+  const authPassSignup = document.getElementById('auth-password-signup');
+  if (authPassSignup) authPassSignup.value = '';
   // Reset buttons
   const btn1 = document.getElementById('auth-btn-signin');
   if (btn1) { btn1.disabled = false; btn1.textContent = 'Sign In 🔑'; }
   const btn2 = document.getElementById('auth-btn-signup');
-  if (btn2) { btn2.disabled = false; btn2.textContent = 'Send magic link ✉️'; }
+  if (btn2) { btn2.disabled = false; btn2.textContent = 'Create Account ✨'; }
   // Hide user info
   const ui = document.getElementById('user-info');
   if (ui) ui.style.display = 'none';
