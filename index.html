@@ -3896,11 +3896,36 @@ function toggleTheme() {
 // ═══════════════════════════════════════════════════════
 //  AUTH HANDLERS
 // ═══════════════════════════════════════════════════════
-async function handleSignIn() {
-  const email = document.getElementById('auth-email').value.trim();
-  const err   = document.getElementById('auth-err');
-  const btn   = document.getElementById('auth-btn');
+
+// ── Sign In with email + password (existing users) ──
+async function handlePasswordSignIn() {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const err      = document.getElementById('auth-err');
+  const btn      = document.getElementById('auth-btn-signin');
+
+  err.style.display = 'none';
+  if (!email)    { err.textContent = 'Please enter your email.';    err.style.display = 'block'; return; }
+  if (!password) { err.textContent = 'Please enter your password.'; err.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  const { error } = await supa.auth.signInWithPassword({ email, password });
+  if (error) {
+    err.textContent = error.message; err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign In 🔑';
+  }
+  // On success, onAuthStateChange will handle showing the app
+}
+
+// ── Sign Up with magic link (new users) ──
+async function handleMagicLinkSignUp() {
+  const email = document.getElementById('auth-email-signup').value.trim();
+  const err   = document.getElementById('auth-err-signup');
+  const btn   = document.getElementById('auth-btn-signup');
+
+  err.style.display = 'none';
   if (!email) { err.textContent = 'Please enter your email.'; err.style.display = 'block'; return; }
+
   btn.disabled = true; btn.textContent = 'Sending…';
   const { error } = await supa.auth.signInWithOtp({
     email,
@@ -3910,8 +3935,35 @@ async function handleSignIn() {
     err.textContent = error.message; err.style.display = 'block';
     btn.disabled = false; btn.textContent = 'Send magic link ✉️';
   } else {
-    document.getElementById('auth-form').style.display = 'none';
+    document.getElementById('auth-form-signup').style.display = 'none';
     document.getElementById('auth-sent').style.display = 'block';
+  }
+}
+
+// ── Toggle between Sign In / Sign Up views ──
+function switchAuthMode(mode) {
+  const signinForm = document.getElementById('auth-form-signin');
+  const signupForm = document.getElementById('auth-form-signup');
+  const authSent   = document.getElementById('auth-sent');
+  const subtitle   = document.getElementById('auth-subtitle');
+
+  // Hide the "magic link sent" message
+  authSent.style.display = 'none';
+
+  // Clear errors
+  const err1 = document.getElementById('auth-err');
+  const err2 = document.getElementById('auth-err-signup');
+  if (err1) { err1.style.display = 'none'; err1.textContent = ''; }
+  if (err2) { err2.style.display = 'none'; err2.textContent = ''; }
+
+  if (mode === 'signup') {
+    signinForm.style.display = 'none';
+    signupForm.style.display = 'flex';
+    subtitle.textContent = 'Create an account — we\'ll send a magic link to your email.';
+  } else {
+    signupForm.style.display = 'none';
+    signinForm.style.display = 'flex';
+    subtitle.textContent = 'Sign in to sync your progress across all devices — laptop, phone, anywhere.';
   }
 }
 
@@ -3919,7 +3971,6 @@ async function handleSignOut() {
   const { error } = await supa.auth.signOut();
   if (error) {
     console.warn('Sign-out error, forcing local sign-out:', error.message);
-    // Force clear local session even if server-side revocation failed
     await supa.auth.signOut({ scope: 'local' });
   }
   showAuth();
@@ -3927,17 +3978,21 @@ async function handleSignOut() {
 
 function showAuth() {
   document.getElementById('auth-overlay').style.display = 'flex';
-  // Reset auth form to initial state (in case "magic link sent" was showing)
-  const authForm = document.getElementById('auth-form');
-  if (authForm) authForm.style.display = 'flex';
-  const authSent = document.getElementById('auth-sent');
-  if (authSent) authSent.style.display = 'none';
-  const authErr = document.getElementById('auth-err');
-  if (authErr) { authErr.style.display = 'none'; authErr.textContent = ''; }
-  const authBtn = document.getElementById('auth-btn');
-  if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Send magic link ✉️'; }
+  // Reset to Sign In form in clean state
+  switchAuthMode('signin');
+  // Clear all fields
   const authEmail = document.getElementById('auth-email');
   if (authEmail) authEmail.value = '';
+  const authPass = document.getElementById('auth-password');
+  if (authPass) authPass.value = '';
+  const authEmailSignup = document.getElementById('auth-email-signup');
+  if (authEmailSignup) authEmailSignup.value = '';
+  // Reset buttons
+  const btn1 = document.getElementById('auth-btn-signin');
+  if (btn1) { btn1.disabled = false; btn1.textContent = 'Sign In 🔑'; }
+  const btn2 = document.getElementById('auth-btn-signup');
+  if (btn2) { btn2.disabled = false; btn2.textContent = 'Send magic link ✉️'; }
+  // Hide user info
   const ui = document.getElementById('user-info');
   if (ui) ui.style.display = 'none';
   setSyncStatus('');
