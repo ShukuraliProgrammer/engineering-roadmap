@@ -3898,12 +3898,28 @@ async function handleSignIn() {
 }
 
 async function handleSignOut() {
-  await supa.auth.signOut();
+  const { error } = await supa.auth.signOut();
+  if (error) {
+    console.warn('Sign-out error, forcing local sign-out:', error.message);
+    // Force clear local session even if server-side revocation failed
+    await supa.auth.signOut({ scope: 'local' });
+  }
   showAuth();
 }
 
 function showAuth() {
   document.getElementById('auth-overlay').style.display = 'flex';
+  // Reset auth form to initial state (in case "magic link sent" was showing)
+  const authForm = document.getElementById('auth-form');
+  if (authForm) authForm.style.display = 'flex';
+  const authSent = document.getElementById('auth-sent');
+  if (authSent) authSent.style.display = 'none';
+  const authErr = document.getElementById('auth-err');
+  if (authErr) { authErr.style.display = 'none'; authErr.textContent = ''; }
+  const authBtn = document.getElementById('auth-btn');
+  if (authBtn) { authBtn.disabled = false; authBtn.textContent = 'Send magic link ✉️'; }
+  const authEmail = document.getElementById('auth-email');
+  if (authEmail) authEmail.value = '';
   const ui = document.getElementById('user-info');
   if (ui) ui.style.display = 'none';
   setSyncStatus('');
