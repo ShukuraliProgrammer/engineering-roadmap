@@ -236,22 +236,25 @@
     #auth-icon { font-size: 3rem; margin-bottom: 16px; }
     #auth-box h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; }
     #auth-box p  { font-size: 0.95rem; color: var(--muted); line-height: 1.65; }
-    #auth-form   { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
-    #auth-email  {
+    #auth-form-signin, #auth-form-signup { margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    #auth-email, #auth-password, #auth-email-signup {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; color: var(--text); font-size: 1rem;
       padding: 12px 16px; outline: none; text-align: center;
     }
-    #auth-email:focus { border-color: #6366f1; }
-    #auth-email::placeholder { color: var(--muted); }
-    #auth-btn {
+    #auth-email:focus, #auth-password:focus, #auth-email-signup:focus { border-color: #6366f1; }
+    #auth-email::placeholder, #auth-password::placeholder, #auth-email-signup::placeholder { color: var(--muted); }
+    #auth-btn-signin, #auth-btn-signup {
       background: #6366f1; color: white; border: none;
       border-radius: 10px; font-size: 1rem; font-weight: 600;
       padding: 13px; cursor: pointer; transition: background 0.15s;
     }
-    #auth-btn:hover:not(:disabled) { background: #818cf8; }
-    #auth-btn:disabled { opacity: 0.55; cursor: default; }
-    #auth-err  { color: #f87171; font-size: 0.85rem; margin-top: 4px; }
+    #auth-btn-signin:hover:not(:disabled), #auth-btn-signup:hover:not(:disabled) { background: #818cf8; }
+    #auth-btn-signin:disabled, #auth-btn-signup:disabled { opacity: 0.55; cursor: default; }
+    #auth-err, #auth-err-signup { color: #f87171; font-size: 0.85rem; margin-top: 4px; }
+    .auth-switch { font-size: 0.88rem; color: var(--muted); margin-top: 8px; }
+    .auth-switch a { color: #818cf8; text-decoration: none; font-weight: 600; }
+    .auth-switch a:hover { text-decoration: underline; color: #a5b4fc; }
     #auth-sent { display: none; margin-top: 28px; }
     #auth-sent .sent-icon { font-size: 2.5rem; margin-bottom: 14px; }
     #auth-sent p { margin-top: 8px; }
@@ -448,15 +451,30 @@
 <div id="auth-overlay">
   <div id="auth-box">
     <div id="auth-icon">📚</div>
-    <h2>My Engineering Roadmap</h2>
-    <p>Sign in to sync your progress across all devices — laptop, phone, anywhere.</p>
-    <div id="auth-form">
+    <h2 id="auth-title">My Engineering Roadmap</h2>
+    <p id="auth-subtitle">Sign in to sync your progress across all devices — laptop, phone, anywhere.</p>
+
+    <!-- SIGN IN FORM (email + password) -->
+    <div id="auth-form-signin">
       <input id="auth-email" type="email" placeholder="your@email.com"
-             onkeydown="if(event.key==='Enter') handleSignIn()">
-      <button id="auth-btn" onclick="handleSignIn()">Send magic link ✉️</button>
+             onkeydown="if(event.key==='Enter') document.getElementById('auth-password').focus()">
+      <input id="auth-password" type="password" placeholder="Password"
+             onkeydown="if(event.key==='Enter') handlePasswordSignIn()">
+      <button id="auth-btn-signin" onclick="handlePasswordSignIn()">Sign In 🔑</button>
       <p id="auth-err" style="display:none"></p>
+      <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuthMode('signup'); return false;">Sign up with magic link</a></p>
     </div>
-    <div id="auth-sent">
+
+    <!-- SIGN UP FORM (magic link) -->
+    <div id="auth-form-signup" style="display:none">
+      <input id="auth-email-signup" type="email" placeholder="your@email.com"
+             onkeydown="if(event.key==='Enter') handleMagicLinkSignUp()">
+      <button id="auth-btn-signup" onclick="handleMagicLinkSignUp()">Send magic link ✉️</button>
+      <p id="auth-err-signup" style="display:none"></p>
+      <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuthMode('signin'); return false;">Sign in</a></p>
+    </div>
+
+    <div id="auth-sent" style="display:none">
       <div class="sent-icon">✉️</div>
       <p>Magic link sent! Check your email and click the link — works on any device.</p>
       <p class="hint">You can close this tab. The link will bring you right back.</p>
