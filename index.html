@@ -465,15 +465,13 @@
       <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuthMode('signup'); return false;">Sign up</a></p>
     </div>
 
-    <!-- SIGN UP FORM (email + password) -->
+    <!-- SIGN UP FORM (Magic Link for new users) -->
     <div id="auth-form-signup" style="display:none">
       <input id="auth-email-signup" type="email" placeholder="your@email.com"
-             onkeydown="if(event.key==='Enter') document.getElementById('auth-password-signup').focus()">
-      <input id="auth-password-signup" type="password" placeholder="Create a password"
              onkeydown="if(event.key==='Enter') handleSignUp()">
-      <button id="auth-btn-signup" onclick="handleSignUp()">Create Account ✨</button>
+      <button id="auth-btn-signup" onclick="handleSignUp()">Send Magic Link ✨</button>
       <p id="auth-err-signup" style="display:none"></p>
-      <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuthMode('signin'); return false;">Sign in</a></p>
+      <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuthMode('signin'); return false;">Sign in with password</a></p>
     </div>
 
     <div id="auth-sent" style="display:none">
@@ -3919,26 +3917,30 @@ async function handlePasswordSignIn() {
   // On success, onAuthStateChange will handle showing the app
 }
 
-// ── Sign Up with email + password (new users) ──
+// ── Sign Up with Magic Link (new users / passwordless) ──
 async function handleSignUp() {
   const email    = document.getElementById('auth-email-signup').value.trim();
-  const password = document.getElementById('auth-password-signup').value;
   const err      = document.getElementById('auth-err-signup');
   const btn      = document.getElementById('auth-btn-signup');
 
   err.style.display = 'none';
   if (!email)    { err.textContent = 'Please enter your email.';    err.style.display = 'block'; return; }
-  if (!password) { err.textContent = 'Please create a password.'; err.style.display = 'block'; return; }
-  if (password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
 
-  btn.disabled = true; btn.textContent = 'Creating account…';
-  const { error } = await supa.auth.signUp({ email, password });
+  btn.disabled = true; btn.textContent = 'Sending link…';
+  const { error } = await supa.auth.signInWithOtp({ 
+    email,
+    options: {
+      emailRedirectTo: window.location.origin + window.location.pathname
+    }
+  });
+
   if (error) {
     err.textContent = error.message; err.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Create Account ✨';
+    btn.disabled = false; btn.textContent = 'Send Magic Link ✨';
   } else {
     document.getElementById('auth-form-signup').style.display = 'none';
     document.getElementById('auth-sent').style.display = 'block';
+    document.getElementById('auth-sent-msg').textContent = 'Check your email for a magic link to sign in.';
   }
 }
 
@@ -3961,7 +3963,7 @@ function switchAuthMode(mode) {
   if (mode === 'signup') {
     signinForm.style.display = 'none';
     signupForm.style.display = 'flex';
-    subtitle.textContent = 'Create an account to sync your progress across all devices.';
+    subtitle.textContent = 'Enter your email to receive a magic link for passwordless sign-in.';
   } else {
     signupForm.style.display = 'none';
     signinForm.style.display = 'flex';
