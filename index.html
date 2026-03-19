@@ -3977,10 +3977,15 @@ function switchAuthMode(mode) {
 }
 
 async function handleSignOut() {
-  const { error } = await supa.auth.signOut();
-  if (error) {
-    console.warn('Sign-out error, forcing local sign-out:', error.message);
-    await supa.auth.signOut({ scope: 'local' });
+  try {
+    const { error } = await supa.auth.signOut();
+    if (error) {
+      console.warn('Sign-out error, forcing local sign-out:', error.message);
+      await supa.auth.signOut({ scope: 'local' });
+    }
+  } catch (err) {
+    console.warn('Sign-out exception, forcing local sign-out:', err);
+    try { await supa.auth.signOut({ scope: 'local' }); } catch (e) { /* ignore */ }
   }
   showAuth();
 }
@@ -4028,8 +4033,12 @@ async function init() {
   buildCatNav();
   render();
 
-  // Listen for auth changes (sign-in via magic link, sign-out)
+  // Listen for auth changes (sign-in, sign-out)
   supa.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_OUT') {
+      showAuth();
+      return;
+    }
     if (session?.user) {
       showApp(session.user);
       setSyncStatus('syncing');
