@@ -14,11 +14,25 @@
       --bg: #f4f6fb; --surface: #ffffff; --surface2: #eef0f8;
       --border: #d0d5e8; --text: #111827; --muted: #5a6380;
     }
-    [data-theme="light"] #header        { background: rgba(244,246,251,0.97); }
+    [data-theme="sepia"] {
+      --bg: #f5f0e8; --surface: #fffdf7; --surface2: #ede8df;
+      --border: #c9b99a; --text: #2e2a20; --muted: #7a6a50;
+    }
+    [data-theme="light"] #top-bar        { background: rgba(255,255,255,0.97); box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
     [data-theme="light"] .topic-title   { color: #111827; }
     [data-theme="light"] .topic-resources { color: #4f46e5; }
     [data-theme="light"] .notes-btn.has-notes { color: #b45309; border-color: #b45309; }
     [data-theme="light"] #export-btn    { box-shadow: 0 4px 18px rgba(99,102,241,0.25); }
+    [data-theme="sepia"] #top-bar        { background: rgba(245,240,232,0.97); box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
+    [data-theme="sepia"] .topic-title   { color: #2e2a20; }
+    [data-theme="sepia"] .topic-resources { color: #92400e; }
+    [data-theme="sepia"] .notes-btn.has-notes { color: #92400e; border-color: #b45309; }
+    [data-theme="sepia"] #search:focus  { border-color: #b45309; }
+    [data-theme="sepia"] .notes-textarea:focus { border-color: #b45309; }
+    [data-theme="sepia"] .cat-pill:hover { color: #2e2a20; }
+    [data-theme="sepia"] #progress-bar  { background: linear-gradient(90deg,#b45309,#d97706); }
+    [data-theme="sepia"] #export-btn    { background: #b45309; box-shadow: 0 4px 18px rgba(180,83,9,0.3); }
+    [data-theme="sepia"] #export-btn:hover { background: #d97706; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: var(--bg); color: var(--text);
@@ -27,11 +41,12 @@
       -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ── HEADER ── */
-    #header {
-      position: sticky; top: 0; z-index: 100;
+    #top-bar {
+      position: sticky; top: 0; z-index: 1000;
       background: rgba(13,15,26,0.97); backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
+    }
+    #header {
       padding: 13px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
     }
     #header h1 { font-size: 1.2rem; font-weight: 700; white-space: nowrap; }
@@ -63,7 +78,6 @@
     /* ── CATEGORY NAV PILLS ── */
     #cat-nav {
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
       padding: 8px 22px;
       display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
     }
@@ -153,12 +167,40 @@
       width: 100%; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 9px; color: var(--text); font-family: inherit;
       font-size: 1rem; line-height: 1.75; padding: 12px 16px;
-      resize: vertical; min-height: 100px; outline: none; transition: border-color 0.13s;
+      resize: none; min-height: 80px; outline: none; transition: border-color 0.13s;
+      overflow-y: hidden; box-sizing: border-box;
+      field-sizing: content;
     }
     .notes-textarea:focus { border-color: #6366f1; }
     .notes-textarea::placeholder { color: var(--muted); }
     .notes-saved { font-size: 0.8rem; color: #22c55e; margin-top: 4px; opacity: 0; transition: opacity 0.3s; }
     .notes-saved.show { opacity: 1; }
+
+    /* ── SUBTASK NOTES ── */
+    .subtask-notes-area {
+      display: none; margin: 4px 0 6px 30px;
+      padding: 10px 14px; border-left: 2px dashed var(--border);
+      background: var(--surface2); border-radius: 0 8px 8px 0;
+    }
+    .subtask-notes-area.open { display: block; }
+    .subtask-notes-textarea {
+      width: 100%; background: transparent; border: none;
+      border-bottom: 1px dashed var(--border); color: var(--text); font-family: inherit;
+      font-size: 0.93rem; line-height: 1.7; padding: 4px 0;
+      resize: none; min-height: 48px; outline: none;
+      overflow-y: hidden; box-sizing: border-box;
+      field-sizing: content;
+    }
+    .subtask-notes-textarea:focus { border-bottom-color: #6366f1; }
+    .subtask-notes-textarea::placeholder { color: var(--muted); }
+    .subtask-notes-saved { font-size: 0.77rem; color: #22c55e; opacity: 0; transition: opacity 0.3s; }
+    .subtask-notes-saved.show { opacity: 1; }
+    .subtask-note-btn {
+      font-size: 0.8rem; color: var(--muted); background: none; border: none;
+      padding: 0 4px; cursor: pointer; transition: color 0.13s; margin-left: auto; flex-shrink: 0;
+    }
+    .subtask-note-btn:hover { color: var(--text); }
+    .subtask-note-btn.has-notes { color: #fbbf24; }
 
     /* ── CATEGORY COLORS ── */
     .phase[data-color="indigo"]  .phase-dot { background: #6366f1; }
@@ -224,7 +266,7 @@
 
     /* ── AUTH OVERLAY ── */
     #auth-overlay {
-      position: fixed; inset: 0; z-index: 999;
+      position: fixed; inset: 0; z-index: 2000;
       background: var(--bg);
       display: flex; align-items: center; justify-content: center; padding: 20px;
     }
@@ -364,7 +406,9 @@
       .topic-resources { font-size: 0.84rem; }
       .subtasks { margin-left: 30px; padding-left: 12px; }
       .user-resources { margin-left: 30px; }
-      .notes-textarea { min-height: 80px; font-size: 0.95rem; padding: 10px 12px; }
+      .notes-textarea { font-size: 0.95rem; padding: 10px 12px; }
+      .subtask-notes-textarea { font-size: 0.88rem; }
+      .subtask-note-btn { font-size: 0.75rem; }
       #auth-box { padding: 32px 24px; }
       #auth-box h2 { font-size: 1.3rem; }
       #export-btn { bottom: 14px; right: 14px; padding: 9px 16px; font-size: 0.82rem; }
@@ -482,26 +526,27 @@
   </div>
 </div>
 
-<div id="header">
-  <h1>My Roadmap <span>Senior → Staff</span></h1>
-  <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
-  <div id="progress-label">0 / 0</div>
-  <span id="sync-status"></span>
-  <div id="controls">
-    <input id="search" type="text" placeholder="Search…">
-    <button class="ctrl-btn active" data-filter="all">All</button>
-    <button class="ctrl-btn" data-filter="todo">To Do</button>
-    <button class="ctrl-btn" data-filter="done">Done</button>
-    <button class="ctrl-btn" data-filter="notes">Has Notes</button>
-    <button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark">🌙</button>
-    <div id="user-info">
-      <span id="user-email"></span>
-      <button class="ctrl-btn" onclick="handleSignOut()">Sign out</button>
+<div id="top-bar">
+  <div id="header">
+    <h1>My Roadmap <span>Senior → Staff</span></h1>
+    <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+    <div id="progress-label">0 / 0</div>
+    <span id="sync-status"></span>
+    <div id="controls">
+      <input id="search" type="text" placeholder="Search…">
+      <button class="ctrl-btn active" data-filter="all">All</button>
+      <button class="ctrl-btn" data-filter="todo">To Do</button>
+      <button class="ctrl-btn" data-filter="done">Done</button>
+      <button class="ctrl-btn" data-filter="notes">Has Notes</button>
+      <button class="ctrl-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <div id="user-info">
+        <span id="user-email"></span>
+        <button class="ctrl-btn" onclick="handleSignOut()">Sign out</button>
+      </div>
     </div>
   </div>
+  <div id="cat-nav"></div>
 </div>
-
-<div id="cat-nav"></div>
 
 <div id="main">
   <div id="phases-container"></div>
@@ -3245,8 +3290,11 @@ let state = { checked: {}, notes: {}, notesDate: {}, collapsed: {}, resources: {
 
 const CUSTOM_KEY = 'eng_roadmap_custom';
 function loadCustomData() {
-  try { return JSON.parse(localStorage.getItem(CUSTOM_KEY) || '{"categories":[],"topics":{}}'); }
-  catch { return { categories: [], topics: {} }; }
+  try {
+    const d = JSON.parse(localStorage.getItem(CUSTOM_KEY) || '{"categories":[],"topics":{}}');
+    if (!d.overrides) d.overrides = {};
+    return d;
+  } catch { return { categories: [], topics: {}, overrides: {} }; }
 }
 function saveCustomData() { localStorage.setItem(CUSTOM_KEY, JSON.stringify(state.customData)); }
 
@@ -3287,9 +3335,10 @@ function loadLocalState() {
     if (!s.notesDate)  s.notesDate  = {};
     if (!s.collapsed)  s.collapsed  = {};
     if (!s.resources)  s.resources  = {};
-    if (!s.customData) s.customData = { categories: [], topics: {} };
+    if (!s.customData) s.customData = { categories: [], topics: {}, overrides: {} };
+    if (!s.customData.overrides) s.customData.overrides = {};
     return s;
-  } catch { return { checked: {}, notes: {}, notesDate: {}, collapsed: {}, resources: {}, customData: { categories: [], topics: {} } }; }
+  } catch { return { checked: {}, notes: {}, notesDate: {}, collapsed: {}, resources: {}, customData: { categories: [], topics: {}, overrides: {} } }; }
 }
 function saveLocalState() { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
 
@@ -3331,7 +3380,7 @@ let syncTimer  = null;
 function queueSync(id) {
   syncQueue[id] = true;
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(flushSync, 800);
+  syncTimer = setTimeout(flushSync, 1500);
 }
 
 async function flushSync() {
@@ -3347,8 +3396,6 @@ async function flushSync() {
     user_id:        user.id,
     topic_id:       id,
     checked:        !!state.checked[id],
-    notes:          state.notes[id]     || '',
-    notes_date:     state.notesDate[id] || '',
     user_resources: JSON.stringify(state.resources[id] || []),
     updated_at:     new Date().toISOString(),
   }));
@@ -3448,9 +3495,19 @@ function render() {
       secEl.innerHTML = `<div class="section-title">${section.title}</div>`;
 
       section.topics.forEach(topic => {
-        const hasSubtasks = topic.subtasks && topic.subtasks.length;
+        // Apply overrides non-destructively so ROADMAP is never mutated
+        const ov = state.customData.overrides?.[topic.id] || {};
+        const hasOv = Object.keys(ov).length > 0;
+        const dt = {
+          title:    ov.title    !== undefined ? ov.title    : topic.title,
+          desc:     ov.desc     !== undefined ? ov.desc     : (topic.desc || ''),
+          res:      ov.res      !== undefined ? ov.res      : (topic.res  || ''),
+          subtasks: ov.subtasks !== undefined ? ov.subtasks : (topic.subtasks || null),
+        };
+
+        const hasSubtasks = !!(dt.subtasks && dt.subtasks.length);
         const isDone  = hasSubtasks
-          ? topic.subtasks.every(st => state.checked[st.id])
+          ? dt.subtasks.every(st => state.checked[st.id])
           : !!state.checked[topic.id];
         const hasNote = !!(state.notes[topic.id] && state.notes[topic.id].trim());
         const userRes = state.resources[topic.id] || [];
@@ -3461,10 +3518,10 @@ function render() {
         if (currentFilter === 'notes' && !hasNote) hidden = true;
         if (currentSearch) {
           const q = currentSearch.toLowerCase();
-          const matchMain = topic.title.toLowerCase().includes(q) ||
-              topic.desc.toLowerCase().includes(q) ||
-              (topic.res || '').toLowerCase().includes(q);
-          const matchSub = hasSubtasks && topic.subtasks.some(st => st.title.toLowerCase().includes(q));
+          const matchMain = dt.title.toLowerCase().includes(q) ||
+              dt.desc.toLowerCase().includes(q) ||
+              dt.res.toLowerCase().includes(q);
+          const matchSub = hasSubtasks && dt.subtasks.some(st => st.title.toLowerCase().includes(q));
           if (!matchMain && !matchSub) hidden = true;
         }
 
@@ -3480,15 +3537,28 @@ function render() {
         // Subtasks HTML
         let subtasksHTML = '';
         if (hasSubtasks) {
-          const stDone = topic.subtasks.filter(st => state.checked[st.id]).length;
+          const stDone = dt.subtasks.filter(st => state.checked[st.id]).length;
           subtasksHTML = `<div class="subtasks">
-            <div class="subtask-progress">${stDone} / ${topic.subtasks.length} done</div>
-            ${topic.subtasks.map(st => `
+            <div class="subtask-progress">${stDone} / ${dt.subtasks.length} done</div>
+            ${dt.subtasks.map(st => {
+              const stNote = state.notes[st.id] || '';
+              const hasStNote = !!(stNote && stNote.trim());
+              const stNoteDate = state.notesDate[st.id] ? `Last updated: ${state.notesDate[st.id]}` : '';
+              return `
               <div class="subtask${state.checked[st.id] ? ' done' : ''}">
                 <div class="subtask-check" onclick="toggleDone('${st.id}')"></div>
                 <span class="subtask-title">${st.title}</span>
+                <button class="subtask-note-btn${hasStNote ? ' has-notes' : ''}" onclick="toggleSubtaskNote('${st.id}')" title="Notes">💬${hasStNote ? '●' : ''}</button>
               </div>
-            `).join('')}
+              <div class="subtask-notes-area" id="stnotes-${st.id}">
+                ${stNoteDate ? `<div class="notes-date">${stNoteDate}</div>` : ''}
+                <textarea class="subtask-notes-textarea"
+                  placeholder="Note for this subtask…"
+                  oninput="saveNote('${st.id}', this.value); autoResize(this)"
+                >${stNote}</textarea>
+                <div class="subtask-notes-saved" id="stsaved-${st.id}">Saved ✓</div>
+              </div>`;
+            }).join('')}
           </div>`;
         }
 
@@ -3521,19 +3591,24 @@ function render() {
           </div>
         </div>`;
 
-        const customTopicBtns = topic._custom ? `
-                <div class="topic-edit-actions">
-                  <button class="edit-inline-btn" onclick="openEditTopic('${cat.id}','${topic.id}')" title="Edit">✎</button>
-                  <button class="delete-inline-btn" onclick="deleteTopic('${cat.id}','${topic.id}')" title="Delete">✕</button>
-                </div>` : '';
+        // Edit/delete buttons: custom topics get edit+delete; built-in topics get edit + optional reset
+        const customTopicBtns = topic._custom
+          ? `<div class="topic-edit-actions">
+              <button class="edit-inline-btn" onclick="openEditTopic('${cat.id}','${topic.id}')" title="Edit">✎</button>
+              <button class="delete-inline-btn" onclick="deleteTopic('${cat.id}','${topic.id}')" title="Delete">✕</button>
+            </div>`
+          : `<div class="topic-edit-actions">
+              <button class="edit-inline-btn" onclick="openEditBuiltinTopic('${topic.id}')" title="Edit topic">✎</button>
+              ${hasOv ? `<button class="delete-inline-btn" onclick="resetTopicOverride('${topic.id}')" title="Reset to original" style="font-size:0.8rem;opacity:0.7">↺</button>` : ''}
+            </div>`;
 
         topicEl.innerHTML = `
           <div class="topic-row">
             ${hasSubtasks ? '<div style="width:20px;flex-shrink:0"></div>' : `<div class="topic-check" onclick="toggleDone('${topic.id}')"></div>`}
             <div class="topic-content">
-              <div class="topic-title">${topic.title}${badgeHTML(topic.badge || null)}${customTopicBtns}</div>
-              <div class="topic-desc">${topic.desc}</div>
-              ${topic.res ? `<div class="topic-resources">📚 ${topic.res}</div>` : ''}
+              <div class="topic-title">${dt.title}${badgeHTML(topic.badge || null)}${customTopicBtns}</div>
+              <div class="topic-desc">${dt.desc}</div>
+              ${dt.res ? `<div class="topic-resources">📚 ${dt.res}</div>` : ''}
               ${subtasksHTML}
               ${userResHTML}
               <div class="topic-actions">
@@ -3547,7 +3622,7 @@ function render() {
             ${noteDate ? `<div class="notes-date">${noteDate}</div>` : ''}
             <textarea class="notes-textarea"
               placeholder="Write what you learned, gotchas, resources you found, how you applied it in real work…"
-              oninput="saveNote('${topic.id}', this.value)"
+              oninput="saveNote('${topic.id}', this.value); autoResize(this)"
             >${state.notes[topic.id] || ''}</textarea>
             <div class="notes-saved" id="saved-${topic.id}">Saved ✓</div>
           </div>
@@ -3604,24 +3679,53 @@ function saveNote(id, value) {
   const now = new Date();
   state.notesDate[id] = now.toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
   saveLocalState();
-  queueSync(id);
+  // Notes are local-only — no Supabase sync to keep things fast
   clearTimeout(saveTimers[id]);
   saveTimers[id] = setTimeout(() => {
+    // Show saved indicator (topic-level)
     const saved = document.getElementById('saved-' + id);
     if (saved) { saved.classList.add('show'); setTimeout(() => saved.classList.remove('show'), 2000); }
+    // Show saved indicator (subtask-level)
+    const stSaved = document.getElementById('stsaved-' + id);
+    if (stSaved) { stSaved.classList.add('show'); setTimeout(() => stSaved.classList.remove('show'), 2000); }
+    // Update topic-level button label if applicable
     const btn = document.querySelector(`[data-id="${id}"] .notes-btn`);
     if (btn) {
-      if (value.trim()) { btn.textContent = '📝 My Notes'; btn.classList.add('has-notes'); }
+      if (value.trim()) { btn.textContent = '\uD83D\uDCDD My Notes'; btn.classList.add('has-notes'); }
       else              { btn.textContent = '+ Add Notes'; btn.classList.remove('has-notes'); }
     }
-  }, 600);
+    // Update subtask-level button
+    const stBtn = document.querySelector(`#stnotes-${id}`)?.previousElementSibling?.querySelector('.subtask-note-btn');
+    if (stBtn) {
+      if (value.trim()) { stBtn.textContent = '\uD83D\uDCAC\u25CF'; stBtn.classList.add('has-notes'); }
+      else              { stBtn.textContent = '\uD83D\uDCAC'; stBtn.classList.remove('has-notes'); }
+    }
+  }, 500);
 }
 
 function toggleNotes(id) {
   const area = document.getElementById('notes-' + id);
   if (!area) return;
   area.classList.toggle('open');
-  if (area.classList.contains('open')) area.querySelector('textarea').focus();
+  if (area.classList.contains('open')) {
+    const ta = area.querySelector('textarea');
+    if (ta) { ta.focus(); autoResize(ta); }
+  }
+}
+
+function toggleSubtaskNote(id) {
+  const area = document.getElementById('stnotes-' + id);
+  if (!area) return;
+  area.classList.toggle('open');
+  if (area.classList.contains('open')) {
+    const ta = area.querySelector('textarea');
+    if (ta) { ta.focus(); autoResize(ta); }
+  }
+}
+
+function autoResize(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = ta.scrollHeight + 'px';
 }
 
 // ── Helper ──
@@ -3834,6 +3938,92 @@ function deleteTopic(catId, topicId) {
 }
 
 // ═══════════════════════════════════════════════════════
+//  BUILT-IN TOPIC EDITING (override system)
+// ═══════════════════════════════════════════════════════
+function openEditBuiltinTopic(topicId) {
+  // Resolve topic from ROADMAP (ignoring any prev override — read original)
+  let origTopic = null;
+  ROADMAP.forEach(cat => cat.sections.forEach(sec => {
+    const t = sec.topics.find(t => t.id === topicId);
+    if (t) origTopic = t;
+  }));
+  if (!origTopic) return;
+
+  // Merge with existing override so the modal shows current edited values
+  const ov = state.customData.overrides?.[topicId] || {};
+  const editTitle    = ov.title    !== undefined ? ov.title    : origTopic.title;
+  const editDesc     = ov.desc     !== undefined ? ov.desc     : (origTopic.desc || '');
+  const editRes      = ov.res      !== undefined ? ov.res      : (origTopic.res  || '');
+  const editSubtasks = ov.subtasks !== undefined ? ov.subtasks : (origTopic.subtasks || []);
+  const subsText     = editSubtasks.map(s => s.title).join('\n');
+
+  document.getElementById('modal-box').innerHTML = `
+    <h3>Edit Topic</h3>
+    <label>Title</label>
+    <input id="m-top-title" value="${escapeHTML(editTitle)}">
+    <label>Description</label>
+    <textarea id="m-top-desc">${escapeHTML(editDesc)}</textarea>
+    <label>Resources (optional)</label>
+    <input id="m-top-res" value="${escapeHTML(editRes)}">
+    <label>Subtasks (one per line)</label>
+    <textarea id="m-top-subs">${escapeHTML(subsText)}</textarea>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-cancel" onclick="resetTopicOverride('${topicId}')">↺ Reset</button>
+      <button class="btn-primary" onclick="saveEditBuiltinTopic('${topicId}')">Save</button>
+    </div>`;
+  document.getElementById('modal-overlay').classList.add('open');
+
+  // Auto-resize textareas inside modal
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#modal-box textarea').forEach(ta => autoResize(ta));
+  });
+}
+
+function saveEditBuiltinTopic(topicId) {
+  const title    = document.getElementById('m-top-title').value.trim();
+  const desc     = document.getElementById('m-top-desc').value.trim();
+  const res      = document.getElementById('m-top-res').value.trim();
+  const subsText = document.getElementById('m-top-subs').value.trim();
+  if (!title) return;
+
+  // Preserve original subtask IDs by position to keep checked state intact
+  let origSubtasks = [];
+  ROADMAP.forEach(cat => cat.sections.forEach(sec => {
+    const t = sec.topics.find(t => t.id === topicId);
+    if (t && t.subtasks) origSubtasks = t.subtasks;
+  }));
+  // Also check existing override subtasks
+  const prevOvSubs = state.customData.overrides?.[topicId]?.subtasks || origSubtasks;
+
+  let subtasks;
+  if (subsText) {
+    const lines = subsText.split('\n').filter(l => l.trim());
+    subtasks = lines.map((line, i) => ({
+      id: prevOvSubs[i]?.id || origSubtasks[i]?.id || (topicId + '_ov' + (i + 1)),
+      title: line.trim()
+    }));
+  } else {
+    subtasks = [];
+  }
+
+  if (!state.customData.overrides) state.customData.overrides = {};
+  state.customData.overrides[topicId] = { title, desc, res, subtasks };
+  saveCustomData();
+  closeModal();
+  render();
+}
+
+function resetTopicOverride(topicId) {
+  if (state.customData.overrides?.[topicId]) {
+    delete state.customData.overrides[topicId];
+    saveCustomData();
+  }
+  closeModal();
+  render();
+}
+
+// ═══════════════════════════════════════════════════════
 //  FILTER & SEARCH
 // ═══════════════════════════════════════════════════════
 document.querySelectorAll('[data-filter]').forEach(btn => {
@@ -3886,10 +4076,14 @@ function exportNotes() {
 // ═══════════════════════════════════════════════════════
 function applyTheme(theme) {
   document.documentElement.dataset.theme = theme;
-  document.getElementById('theme-btn').textContent = theme === 'light' ? '🌙' : '☀️';
+  const btn = document.getElementById('theme-btn');
+  if (theme === 'light')      { btn.textContent = '\u2600\uFE0F'; btn.title = 'Switch to Sepia'; }
+  else if (theme === 'sepia') { btn.textContent = '\uD83D\uDCD6'; btn.title = 'Switch to Dark'; }
+  else                        { btn.textContent = '\uD83C\uDF19'; btn.title = 'Switch to Light'; }
 }
 function toggleTheme() {
-  const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+  const cur  = document.documentElement.dataset.theme || 'dark';
+  const next = cur === 'dark' ? 'light' : cur === 'light' ? 'sepia' : 'dark';
   localStorage.setItem('roadmap_theme', next);
   applyTheme(next);
 }
@@ -3972,12 +4166,36 @@ function switchAuthMode(mode) {
 }
 
 async function handleSignOut() {
-  const { error } = await supa.auth.signOut();
-  if (error) {
-    console.warn('Sign-out error, forcing local sign-out:', error.message);
-    await supa.auth.signOut({ scope: 'local' });
+  console.log('Signing out...');
+  // 1. Stop background syncs to avoid lock contention
+  if (typeof syncTimer !== 'undefined') clearTimeout(syncTimer);
+  if (typeof syncQueue !== 'undefined') { for (let k in syncQueue) delete syncQueue[k]; }
+  
+  // 2. Clear sync status UI
+  setSyncStatus('');
+
+  // 3. Force reload after 1 second as a fail-safe
+  const reloadTimer = setTimeout(() => {
+    console.warn('Sign-out timed out, forcing reload');
+    window.location.reload();
+  }, 1000);
+
+  try {
+    // 4. Manual cleanup of potential auth tokens in storage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.includes('auth-token') || key.includes('supabase.auth'))) {
+        localStorage.removeItem(key);
+      }
+    }
+    // 5. Attempt official signOut
+    await supa.auth.signOut();
+  } catch (err) {
+    console.error('Sign-out error:', err);
+  } finally {
+    clearTimeout(reloadTimer);
+    window.location.reload();
   }
-  showAuth();
 }
 
 function showAuth() {
@@ -3998,6 +4216,10 @@ function showAuth() {
   if (btn1) { btn1.disabled = false; btn1.textContent = 'Sign In 🔑'; }
   const btn2 = document.getElementById('auth-btn-signup');
   if (btn2) { btn2.disabled = false; btn2.textContent = 'Create Account ✨'; }
+  // Hide top bar during auth
+  const topBar = document.getElementById('top-bar');
+  if (topBar) topBar.style.display = 'none';
+  
   // Hide user info
   const ui = document.getElementById('user-info');
   if (ui) ui.style.display = 'none';
@@ -4006,6 +4228,10 @@ function showAuth() {
 
 function showApp(user) {
   document.getElementById('auth-overlay').style.display = 'none';
+  // Show top bar when signed in
+  const topBar = document.getElementById('top-bar');
+  if (topBar) topBar.style.display = 'block';
+  
   const emailEl = document.getElementById('user-email');
   if (emailEl) emailEl.textContent = user.email;
   const ui = document.getElementById('user-info');
