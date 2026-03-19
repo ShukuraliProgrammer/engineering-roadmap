@@ -465,11 +465,13 @@
       <p class="auth-switch">Don't have an account? <a href="#" onclick="switchAuthMode('signup'); return false;">Sign up</a></p>
     </div>
 
-    <!-- SIGN UP FORM (Magic Link for new users) -->
+    <!-- SIGN UP FORM (Email + Password) -->
     <div id="auth-form-signup" style="display:none">
       <input id="auth-email-signup" type="email" placeholder="your@email.com"
+             onkeydown="if(event.key==='Enter') document.getElementById('auth-password-signup').focus()">
+      <input id="auth-password-signup" type="password" placeholder="Password (min 6 characters)"
              onkeydown="if(event.key==='Enter') handleSignUp()">
-      <button id="auth-btn-signup" onclick="handleSignUp()">Send Magic Link ✨</button>
+      <button id="auth-btn-signup" onclick="handleSignUp()">Sign Up 🔑</button>
       <p id="auth-err-signup" style="display:none"></p>
       <p class="auth-switch">Already have an account? <a href="#" onclick="switchAuthMode('signin'); return false;">Sign in with password</a></p>
     </div>
@@ -3917,30 +3919,33 @@ async function handlePasswordSignIn() {
   // On success, onAuthStateChange will handle showing the app
 }
 
-// ── Sign Up with Magic Link (new users / passwordless) ──
+// ── Sign Up with Email + Password ──
 async function handleSignUp() {
   const email    = document.getElementById('auth-email-signup').value.trim();
+  const password = document.getElementById('auth-password-signup').value;
   const err      = document.getElementById('auth-err-signup');
   const btn      = document.getElementById('auth-btn-signup');
 
   err.style.display = 'none';
   if (!email)    { err.textContent = 'Please enter your email.';    err.style.display = 'block'; return; }
+  if (!password) { err.textContent = 'Please enter a password.';    err.style.display = 'block'; return; }
+  if (password.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.style.display = 'block'; return; }
 
-  btn.disabled = true; btn.textContent = 'Sending link…';
-  const { error } = await supa.auth.signInWithOtp({ 
-    email,
-    options: {
-      emailRedirectTo: window.location.origin + window.location.pathname
-    }
-  });
+  btn.disabled = true; btn.textContent = 'Signing up…';
+  const { data, error } = await supa.auth.signUp({ email, password });
 
   if (error) {
     err.textContent = error.message; err.style.display = 'block';
-    btn.disabled = false; btn.textContent = 'Send Magic Link ✨';
+    btn.disabled = false; btn.textContent = 'Sign Up 🔑';
+  } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+    err.textContent = 'An account with this email already exists.'; err.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign Up 🔑';
+  } else if (data.session) {
+    // Auto-confirmed: onAuthStateChange will handle showing the app
   } else {
     document.getElementById('auth-form-signup').style.display = 'none';
     document.getElementById('auth-sent').style.display = 'block';
-    document.getElementById('auth-sent-msg').textContent = 'Check your email for a magic link to sign in.';
+    document.getElementById('auth-sent-msg').textContent = 'Check your email for a confirmation link to activate your account.';
   }
 }
 
